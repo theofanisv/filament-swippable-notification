@@ -4,8 +4,6 @@ namespace Sanzgrapher\SwippableNotification;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
-use Filament\Support\Assets\Css;
-use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 
 class SwippableNotification implements Plugin
@@ -22,12 +20,13 @@ class SwippableNotification implements Plugin
 
     public function boot(Panel $panel): void
     {
-        // Register JavaScript and CSS for swipe-to-close functionality
-        // Assets should be published to public folder via: php artisan vendor:publish --provider="Sanzgrapher\\SwippableNotification\\SwippableNotificationServiceProvider"
-        FilamentAsset::register([
-            Css::make('swippable-notification-styles', public_path('css/sanzgrapher/swippable-notification/swippable-notification-styles.css')),
-            Js::make('init-swippable', public_path('js/sanzgrapher/swippable-notification/init-swippable.js')),
-        ], package: 'sanzgrapher/swippable-notification');
+        // The service provider registers the stylesheet and the script as loaded on request. A panel that has this
+        // plugin loads them on every page.
+        $package = [SwippableNotificationServiceProvider::PACKAGE];
+
+        foreach ([...FilamentAsset::getStyles($package), ...FilamentAsset::getScripts($package)] as $asset) {
+            $asset->loadedOnRequest(false);
+        }
     }
 
     public function getId(): string
